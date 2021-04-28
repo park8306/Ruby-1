@@ -4,9 +4,9 @@ using UnityEngine;
 
 public class HealthCollectible : MonoBehaviour
 {
-    void OnTriggerEnter2D(Collider2D Strawberry)
+    void OnTriggerEnter2D(Collider2D other)
     {
-        RubyController controller = Strawberry.GetComponent<RubyController>();
+        RubyController controller = other.GetComponent<RubyController>();
         if(controller != null)
         {
             if(controller.currentHealth < controller.maxHealth)
