@@ -15,11 +15,17 @@ public class RubyController : MonoBehaviour
 
     new Rigidbody2D rigidbody2D;
 
+    Animator animator;
+    Vector2 lookDirection = new Vector2(1, 0);
+
+    public GameObject projectilePrefab;
+
     
     // Start는 처음 시작되는 부분 - Git테스트중
     // 가사가 다시 수정
     void Start()
     {
+        animator = GetComponent<Animator>();
         rigidbody2D = GetComponent<Rigidbody2D>();
         currentHealth = maxHealth;
     }
@@ -39,26 +45,20 @@ public class RubyController : MonoBehaviour
         float horizontal = Input.GetAxis("Horizontal");
         float vertical = Input.GetAxis("Vertical");
 
-        if(vertical < 0)
+        Vector2 move = new Vector2(horizontal, vertical);
+        if(!Mathf.Approximately(move.x,0.0f) || !Mathf.Approximately(move.y, 0.0f))
         {
-            vertical = -1;
-        }
-        if(vertical >0)
-        {
-            vertical = 1;
-        }
-        if (horizontal > 0)
-        {
-            horizontal = 1;
-        }
-        if (horizontal < 0)
-        {
-            horizontal = -1;
+            lookDirection.Set(move.x, move.y);
+            lookDirection.Normalize();
         }
 
+        animator.SetFloat("Look X", lookDirection.x);
+        animator.SetFloat("Look Y", lookDirection.y);
+        animator.SetFloat("Speed", move.magnitude);
+
         Vector2 position = rigidbody2D.position;
-        position.x += speed * horizontal * Time.deltaTime;
-        position.y += speed * vertical * Time.deltaTime;
+        position += move * speed * Time.deltaTime;
+
         rigidbody2D.MovePosition(position);
 
         // 무적시간인지 확인하는 함수
@@ -69,6 +69,10 @@ public class RubyController : MonoBehaviour
             {
                 isInvincible = false;
             }
+        }
+        if (Input.GetKeyDown(KeyCode.C))
+        {
+            Launch();
         }
     }
 
@@ -86,5 +90,15 @@ public class RubyController : MonoBehaviour
 
         currentHealth = Mathf.Clamp(currentHealth + amount, 0, maxHealth);
         Debug.Log($"{currentHealth}/{maxHealth}");
+    }
+
+    void Launch()
+    {
+        GameObject projectileObject = Instantiate(projectilePrefab, rigidbody2D.position + Vector2.up * 0.5f, Quaternion.identity);
+
+        Projectile projectile = projectileObject.GetComponent<Projectile>();
+        projectile.Launch(lookDirection, 300);
+
+        animator.SetTrigger("Launch");
     }
 }
